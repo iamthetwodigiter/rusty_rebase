@@ -9,7 +9,7 @@ fn main() -> Result<(), String> {
     let args: Vec<String> = std::env::args().collect();
     if args.len() >= 3 && args[1] == "restore" {
         let backup_dir = std::path::Path::new(&args[2]);
-        match restorer::restore_backup(backup_dir) {
+        match restorer::restore_backup(backup_dir, None) {
             Ok(logs) => {
                 for log in logs {
                     println!("{}", log);

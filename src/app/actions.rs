@@ -167,7 +167,7 @@ pub fn start_restore_from_file(app: &mut App, json_file: std::path::PathBuf) {
 
         let _ = tx.send(InstallMsg::Progress("Restore".to_string(), "Restoring Files".to_string(), Some("BUSY".to_string())));
         
-        let result = crate::restorer::restore_backup(backup_dir);
+        let result = crate::restorer::restore_backup(backup_dir, Some(&tx));
         let logs_vec = match result {
             Ok(l) => Ok(l),
             Err(e) => Err(e),
