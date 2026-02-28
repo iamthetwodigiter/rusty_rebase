@@ -93,7 +93,10 @@ fn render_header(app: &App, frame: &mut Frame, area: Rect) {
 fn render_body(app: &App, frame: &mut Frame, area: Rect) {
     match app.state {
         ViewState::Browsing => render_browsing(app, frame, area),
-        ViewState::Installing | ViewState::Completed => render_progress(app, frame, area),
+        ViewState::Installing | ViewState::Completed | ViewState::Restoring => render_progress(app, frame, area),
+        ViewState::FilePicker { ref current_dir, ref entries, cursor } => {
+            render_file_picker(app, frame, area, current_dir, entries, cursor)
+        }
     }
 }
 
@@ -304,7 +307,7 @@ fn render_footer(app: &App, frame: &mut Frame, area: Rect) {
         ViewState::Browsing => vec![
             Line::from(vec![
                 Span::styled("Keys: ", Style::default().fg(Color::Cyan)),
-                Span::raw("Arrows: Move • Space: Select/Deselect • A/N All/None • R: Resolve • I: Install • D: Dry-run • C: Clear • Q: Quit"),
+                Span::raw("Arrows: Move • Space: Select/Deselect • A/N All/None • R: Resolve • I: Install • U: Restore • D: Dry-run • C: Clear • Q: Quit"),
             ]),
             Line::from(vec![
                 Span::styled("[Resolve] ", Style::default().fg(Color::Yellow)), Span::raw("Fetch latest metadata from network sources   "),
@@ -313,6 +316,8 @@ fn render_footer(app: &App, frame: &mut Frame, area: Rect) {
         ],
         ViewState::Installing => vec![Line::from("installation in progress • please wait...")],
         ViewState::Completed => vec![Line::from("Done! Press [Enter] or [Esc] to return to catalog • [q] to exit")],
+        ViewState::FilePicker { .. } => vec![Line::from("Arrows to navigate • [Enter] to select folder/json • [Esc] to cancel")],
+        ViewState::Restoring => vec![Line::from("restoring user files • please wait...")],
     };
 
     let mut help_para = Paragraph::new(help_lines).alignment(ratatui::layout::Alignment::Center);
@@ -322,4 +327,36 @@ fn render_footer(app: &App, frame: &mut Frame, area: Rect) {
     }
 
     frame.render_widget(help_para, area);
+}
+
+fn render_file_picker(_app: &App, frame: &mut Frame, area: Rect, current_dir: &std::path::Path, entries: &[std::path::PathBuf], cursor: usize) {
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Min(0)])
+        .split(area);
+
+    let items: Vec<ListItem> = entries.iter().enumerate().map(|(idx, path)| {
+        let name = path.file_name().unwrap_or_default().to_string_lossy();
+        let is_dir = path.is_dir();
+        let display = if name.is_empty() && path.parent().is_none() { 
+            "📁 /".to_string() 
+        } else if is_dir { 
+            format!("📁 {}/", name) 
+        } else { 
+            format!("📄 {}", name) 
+        };
+        
+        let style = if idx == cursor {
+            Style::default().fg(Color::Blue).bg(Color::Rgb(40, 40, 40)).add_modifier(Modifier::BOLD)
+        } else {
+            Style::default().fg(Color::White)
+        };
+        ListItem::new(Line::from(Span::styled(display, style)))
+    }).collect();
+
+    let list = List::new(items)
+        .block(Block::default().borders(Borders::ALL).title(format!("  Select Backup JSON: {}  ", current_dir.display())).border_style(Style::default().fg(Color::Cyan)));
+    let mut state = ListState::default();
+    state.select(Some(cursor));
+    frame.render_stateful_widget(list, chunks[0], &mut state);
 }

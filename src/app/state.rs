@@ -21,11 +21,17 @@ pub struct ToolItem {
     pub resolved: Option<ResolvedAsset>,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum ViewState {
     Browsing,
     Installing,
     Completed,
+    FilePicker {
+        current_dir: std::path::PathBuf,
+        entries: Vec<std::path::PathBuf>,
+        cursor: usize,
+    },
+    Restoring,
 }
 
 pub enum InstallMsg {

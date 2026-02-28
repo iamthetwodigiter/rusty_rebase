@@ -109,3 +109,71 @@ pub fn install_selected(app: &mut App) {
         let _ = tx.send(InstallMsg::Finished);
     });
 }
+
+pub fn update_file_picker(app: &mut App, dir: std::path::PathBuf) {
+    let mut entries = Vec::new();
+    
+    if dir.parent().is_some() {
+        entries.push(std::path::PathBuf::from("")); // Special entry for ".."
+    }
+
+    if let Ok(iter) = std::fs::read_dir(&dir) {
+        let mut dirs = Vec::new();
+        let mut files = Vec::new();
+        for entry in iter.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                dirs.push(path);
+            } else if path.extension().map_or(false, |e| e == "json") {
+                files.push(path);
+            }
+        }
+        dirs.sort();
+        files.sort();
+        entries.extend(dirs);
+        entries.extend(files);
+    }
+    app.state = ViewState::FilePicker { current_dir: dir, entries, cursor: 0 };
+}
+
+pub fn start_restore_from_file(app: &mut App, json_file: std::path::PathBuf) {
+    app.state = ViewState::Restoring;
+    app.install_start = Some(Instant::now());
+    let (tx, rx) = mpsc::channel();
+    app.installation_rx = Some(rx);
+    
+    app.progress.operation = "Restore".to_string();
+    app.progress.current = "User Files".to_string();
+    app.progress.total = 1;
+    app.progress.done = 0;
+    app.progress.succeeded = 0;
+    app.progress.failed = 0;
+    app.progress.skipped = 0;
+
+    let (cancel_tx, _cancel_rx) = mpsc::channel();
+    app.cancel_tx = Some(cancel_tx);
+
+    app.logs.push(format!("[restore] Starting restore using metadata: {}", json_file.display()));
+
+    thread::spawn(move || {
+        let backup_dir = match json_file.parent() {
+            Some(p) => p,
+            None => {
+                let _ = tx.send(InstallMsg::Done("Restore".to_string(), Err("Invalid JSON path".to_string())));
+                let _ = tx.send(InstallMsg::Finished);
+                return;
+            }
+        };
+
+        let _ = tx.send(InstallMsg::Progress("Restore".to_string(), "Restoring Files".to_string(), Some("BUSY".to_string())));
+        
+        let result = crate::restorer::restore_backup(backup_dir);
+        let logs_vec = match result {
+            Ok(l) => Ok(l),
+            Err(e) => Err(e),
+        };
+
+        let _ = tx.send(InstallMsg::Done("Restore".to_string(), logs_vec));
+        let _ = tx.send(InstallMsg::Finished);
+    });
+}

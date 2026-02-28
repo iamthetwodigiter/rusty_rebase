@@ -226,10 +226,10 @@ impl App {
 
                     match key_event.code {
                         KeyCode::Char('q') => {
-                            if self.state == ViewState::Installing {
+                            if self.state == ViewState::Installing || self.state == ViewState::Restoring {
                                 if let Some(ref tx) = self.cancel_tx {
                                     let _ = tx.send(());
-                                    self.logs.push("[User] Installation process cancelled. Waiting to abort...".to_string());
+                                    self.logs.push("[User] Process cancelled. Waiting to abort...".to_string());
                                 }
                             } else {
                                 break;
@@ -241,20 +241,48 @@ impl App {
                             }
                             break;
                         }
-                        KeyCode::Esc | KeyCode::Enter => {
+                        KeyCode::Esc => {
                             if self.state == ViewState::Completed {
                                 self.state = ViewState::Browsing;
                                 self.progress = ProgressInfo::default();
                                 self.logs.push("Returned to browsing. Select more tools or resolve again.".to_string());
+                            } else if let ViewState::FilePicker { .. } = self.state {
+                                self.state = ViewState::Browsing;
+                                self.logs.push("File picker cancelled.".to_string());
+                            }
+                        }
+                        KeyCode::Enter => {
+                            if self.state == ViewState::Completed {
+                                self.state = ViewState::Browsing;
+                                self.progress = ProgressInfo::default();
+                                self.logs.push("Returned to browsing. Select more tools or resolve again.".to_string());
+                            } else if let ViewState::FilePicker { ref mut current_dir, ref mut entries, ref mut cursor } = self.state.clone() {
+                                if let Some(path) = entries.get(*cursor) {
+                                    if path.file_name().unwrap_or_default().is_empty() {
+                                        if let Some(parent) = current_dir.parent() {
+                                            actions::update_file_picker(self, parent.to_path_buf());
+                                        }
+                                    } else if path.is_dir() {
+                                        actions::update_file_picker(self, path.clone());
+                                    } else if path.is_file() && path.extension().map_or(false, |e| e == "json") {
+                                        actions::start_restore_from_file(self, path.clone());
+                                    } else {
+                                        self.logs.push("Please select a JSON metadata file or a folder.".to_string());
+                                    }
+                                }
                             }
                         }
                         KeyCode::Down => {
-                            if self.cursor + 1 < self.tools.len() {
+                            if let ViewState::FilePicker { ref mut cursor, ref entries, .. } = self.state {
+                                if *cursor + 1 < entries.len() { *cursor += 1; }
+                            } else if self.state == ViewState::Browsing && self.cursor + 1 < self.tools.len() {
                                 self.cursor += 1;
                             }
                         }
                         KeyCode::Up => {
-                            if self.cursor > 0 {
+                            if let ViewState::FilePicker { ref mut cursor, .. } = self.state {
+                                if *cursor > 0 { *cursor -= 1; }
+                            } else if self.state == ViewState::Browsing && self.cursor > 0 {
                                 self.cursor -= 1;
                             }
                         }
@@ -279,6 +307,11 @@ impl App {
                         }
                         KeyCode::Char('r') => {
                             actions::start_resolution(self);
+                        }
+                        KeyCode::Char('u') => {
+                            if self.state == ViewState::Browsing {
+                                actions::update_file_picker(self, std::env::current_dir().unwrap_or_default());
+                            }
                         }
                         KeyCode::Char('i') => {
                             if !self.dry_run {
