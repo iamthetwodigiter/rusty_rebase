@@ -1,0 +1,334 @@
+[software.flutter]
+display_name = "Flutter SDK"
+description = "Google's UI toolkit for building beautiful, natively compiled applications"
+category = "Development"
+enabled_by_default = true
+install_dir = "~/"
+
+[software.flutter.source]
+kind = "official_source"
+id = "flutter"
+
+[[software.flutter.setup_steps]]
+kind = "package"
+packages = ["curl", "git", "unzip", "xz-utils", "zip", "libglu1-mesa"]
+
+[[software.flutter.setup_steps]]
+kind = "path_hint"
+value = "<install_root>/flutter/bin"
+
+[software.android_studio]
+display_name = "Android Studio"
+description = "The official IDE for Android application development"
+category = "Development"
+enabled_by_default = true
+install_dir = "~/"
+
+[software.android_studio.source]
+kind = "official_source"
+id = "android_studio"
+
+[[software.android_studio.setup_steps]]
+kind = "package"
+packages = ["libxext6", "libxrender1", "libxtst6", "libxi6", "libfreetype6", "libfontconfig1"]
+
+[[software.android_studio.setup_steps]]
+kind = "note"
+value = "Run <install_root>/android-studio/bin/studio.sh once to complete setup and create desktop entry."
+
+[software.platform_tools]
+display_name = "Android Platform Tools"
+description = "SDK Platform-Tools is a component for the Android SDK"
+category = "Development"
+enabled_by_default = false
+install_dir = "~/"
+
+[software.platform_tools.source]
+kind = "official_source"
+url = "https://developer.android.com/tools/releases/platform-tools"
+version_regex = "data-text=\"([0-9\\.]+) \\("
+download_url_regex = "https://dl\\.google\\.com/android/repository/platform-tools-latest-linux\\.zip"
+
+[[software.platform_tools.setup_steps]]
+kind = "path_hint"
+value = "<install_root>/platform-tools"
+
+[software.vscode]
+display_name = "Visual Studio Code"
+description = "Code editing. Redefined."
+category = "Development"
+enabled_by_default = true
+
+[software.vscode.source]
+kind = "official_source"
+id = "vscode"
+
+[[software.vscode.setup_steps]]
+kind = "note"
+value = "Install package with your distro package manager using the downloaded artifact if needed."
+
+[software.brave]
+display_name = "Brave Browser"
+description = "Secure, Fast & Private Web Browser with Adblocker"
+category = "Web"
+enabled_by_default = false
+
+[software.brave.source]
+kind = "package_manager"
+
+[[software.brave.setup_steps]]
+kind = "shell"
+command = "if command -v apt >/dev/null; then sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg && echo \"deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main\" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list && sudo apt update; elif command -v dnf >/dev/null; then sudo dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo; fi"
+
+[[software.brave.setup_steps]]
+kind = "package"
+packages = ["brave-browser"]
+
+[software.chrome]
+display_name = "Google Chrome"
+description = "The fast, free browser that's built for the modern web"
+category = "Web"
+enabled_by_default = false
+
+[software.chrome.source]
+kind = "package_manager"
+
+[[software.chrome.setup_steps]]
+kind = "package"
+packages = ["google-chrome-stable"]
+
+[software.vlc]
+display_name = "VLC Media Player"
+description = "VLC is a free and open source cross-platform multimedia player"
+category = "Media"
+enabled_by_default = false
+
+[software.vlc.source]
+kind = "package_manager"
+
+[[software.vlc.setup_steps]]
+kind = "package"
+packages = ["vlc"]
+
+[software.telegram]
+display_name = "Telegram Desktop"
+description = "Fast and secure desktop app, perfectly synced with your mobile phone"
+category = "Social"
+enabled_by_default = false
+install_dir = "~/"
+
+[software.telegram.source]
+kind = "github"
+repo = "telegramdesktop/tdesktop"
+asset_pattern = "tsetup\\..*\\.tar\\.xz"
+
+[[software.telegram.setup_steps]]
+kind = "path_hint"
+value = "<install_root>/Telegram"
+
+[software.qbittorrent]
+display_name = "qBittorrent"
+description = "Free and open-source BitTorrent client"
+category = "Utility"
+enabled_by_default = false
+
+[software.qbittorrent.source]
+kind = "package_manager"
+
+[[software.qbittorrent.setup_steps]]
+kind = "shell"
+command = "sudo add-apt-repository -y ppa:qbittorrent-team/qbittorrent-stable"
+
+[[software.qbittorrent.setup_steps]]
+kind = "package"
+packages = ["qbittorrent"]
+
+[software.libreoffice]
+display_name = "LibreOffice"
+description = "A free and powerful office suite"
+enabled_by_default = false
+
+[software.libreoffice.source]
+kind = "package_manager"
+
+[[software.libreoffice.setup_steps]]
+kind = "package"
+packages = ["libreoffice"]
+
+[software.kdeconnect]
+display_name = "KDE Connect"
+description = "Seamlessly connect your phone and computer"
+enabled_by_default = false
+
+[software.kdeconnect.source]
+kind = "package_manager"
+
+[[software.kdeconnect.setup_steps]]
+kind = "package"
+packages = ["kdeconnect"]
+
+[software.ffmpeg]
+display_name = "FFmpeg"
+description = "Complete, cross-platform solution to record, convert and stream audio and video"
+enabled_by_default = false
+
+[software.ffmpeg.source]
+kind = "package_manager"
+
+[[software.ffmpeg.setup_steps]]
+kind = "package"
+packages = ["ffmpeg"]
+
+[software.pip]
+display_name = "Python pip"
+description = "The package installer for Python"
+enabled_by_default = false
+
+[software.pip.source]
+kind = "package_manager"
+
+[[software.pip.setup_steps]]
+kind = "package"
+packages = ["python3-pip"]
+
+[software.npm]
+display_name = "Node Package Manager"
+description = "The package manager for JavaScript"
+enabled_by_default = false
+
+[software.npm.source]
+kind = "package_manager"
+
+[[software.npm.setup_steps]]
+kind = "package"
+packages = ["npm"]
+
+[software.golang]
+display_name = "Go Lang"
+description = "Open source programming language that makes it easy to build simple, reliable, and efficient software"
+category = "Development"
+enabled_by_default = false
+install_dir = "~/"
+
+[software.golang.source]
+kind = "official_source"
+url = "https://go.dev/dl/"
+version_regex = "go([0-9\\.]+)\\.linux"
+download_url_regex = "/dl/go[0-9\\.]+\\.linux-{arch}\\.tar\\.gz"
+
+[[software.golang.setup_steps]]
+kind = "package"
+packages = ["git", "build-essential"]
+
+[[software.golang.setup_steps]]
+kind = "path_hint"
+value = "<install_root>/go/bin"
+
+[software.java]
+display_name = "Java Development Kit"
+description = "OpenJDK 21 for Java development"
+category = "Development"
+enabled_by_default = false
+
+[software.java.source]
+kind = "package_manager"
+
+[[software.java.setup_steps]]
+kind = "package"
+packages = ["openjdk-21-jdk"]
+
+[software.localsend]
+display_name = "LocalSend"
+description = "An open source app to share files and messages to nearby devices"
+enabled_by_default = false
+install_dir = "~/"
+
+[software.localsend.source]
+kind = "github"
+repo = "localsend/localsend"
+asset_pattern = ".*linux-{xarch}\\.(deb|rpm|AppImage)"
+
+[[software.localsend.setup_steps]]
+kind = "note"
+value = "Run 'chmod +x' on the downloaded AppImage and execute it"
+
+[software.proton_vpn]
+display_name = "Proton VPN"
+description = "A safe and secure VPN service for Linux"
+category = "Web"
+enabled_by_default = false
+
+[software.proton_vpn.source]
+kind = "package_manager"
+
+[[software.proton_vpn.setup_steps]]
+kind = "shell"
+command = "if command -v apt >/dev/null; then wget -qO /tmp/protonvpn.deb https://repo.protonvpn.com/debian/dists/stable/main/binary-all/protonvpn-stable-release_1.0.8_all.deb && sudo dpkg -i /tmp/protonvpn.deb && sudo apt update; elif command -v dnf >/dev/null; then sudo dnf install -y https://repo.protonvpn.com/fedora-stable/protonvpn-stable-release/protonvpn-stable-release-1.0.3-1.noarch.rpm; fi"
+
+[[software.proton_vpn.setup_steps]]
+kind = "package"
+packages = ["proton-vpn-gnome-desktop"]
+
+[software.proton_pass]
+display_name = "Proton Pass"
+description = "Securely store your passwords, credit cards, and notes"
+category = "Utility"
+enabled_by_default = false
+
+[software.proton_pass.source]
+kind = "package_manager"
+
+[[software.proton_pass.setup_steps]]
+kind = "shell"
+command = "if command -v apt >/dev/null; then wget -qO /tmp/proton-pass.deb https://proton.me/download/pass/linux/proton-pass_1.34.2_{arch}.deb && sudo apt install -y /tmp/proton-pass.deb; elif command -v dnf >/dev/null; then sudo dnf install -y https://proton.me/download/pass/linux/proton-pass-1.34.2-1.{xarch}.rpm; fi"
+
+[[software.proton_pass.setup_steps]]
+kind = "note"
+value = "Proton Pass is installed directly from the RPM/DEB file."
+
+[software.antigravity]
+display_name = "Antigravity"
+description = "Automatic update manager for Linux applications"
+category = "Utility"
+enabled_by_default = false
+
+[software.antigravity.source]
+kind = "package_manager"
+
+[[software.antigravity.setup_steps]]
+kind = "shell"
+command = "if command -v apt >/dev/null; then curl -fsSL https://us-central1-yum.pkg.dev/projects/antigravity-auto-updater-dev/antigravity-debian/public.key | sudo gpg --dearmor -o /usr/share/keyrings/antigravity.gpg && echo \"deb [signed-by=/usr/share/keyrings/antigravity.gpg] https://us-central1-yum.pkg.dev/projects/antigravity-auto-updater-dev/antigravity-debian any main\" | sudo tee /etc/apt/sources.list.d/antigravity.list && sudo apt update; elif command -v dnf >/dev/null; then sudo dnf config-manager --add-repo https://us-central1-yum.pkg.dev/projects/antigravity-auto-updater-dev/antigravity-rpm; fi"
+
+[[software.antigravity.setup_steps]]
+kind = "package"
+packages = ["antigravity"]
+
+[software.fileflow]
+display_name = "FileFlow"
+description = "An open source versatile P2P file transfer tool"
+enabled_by_default = false
+install_dir = "~/"
+
+[software.fileflow.source]
+kind = "github"
+repo = "iamthetwodigiter/FileFlow"
+asset_pattern = ".*\\.tar\\.gz|.*\\.zip"
+
+[[software.fileflow.setup_steps]]
+kind = "note"
+value = "Follow installation instructions from repository README"
+
+[software.shinobihaven]
+display_name = "ShinobiHaven"
+description = "A comprehensive open source cross-platform anime streaming app"
+enabled_by_default = false
+install_dir = "~/"
+
+[software.shinobihaven.source]
+kind = "github"
+repo = "iamthetwodigiter/ShinobiHaven"
+asset_pattern = ".*\\.tar\\.gz|.*\\.zip"
+
+[[software.shinobihaven.setup_steps]]
+kind = "note"
+value = "Follow installation instructions from repository README"
