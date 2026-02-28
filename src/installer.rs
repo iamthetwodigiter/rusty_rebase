@@ -134,7 +134,11 @@ pub fn install_software(
                     "x86" => "386",
                     other => other,
                 };
-                let processed_command = command.replace("{arch}", sys_arch).replace("{xarch}", std::env::consts::ARCH);
+                let dash_arch = std::env::consts::ARCH.replace('_', "-");
+                let processed_command = command
+                    .replace("{arch}", sys_arch)
+                    .replace("{xarch}", std::env::consts::ARCH)
+                    .replace("{xarch_dash}", &dash_arch);
 
                 if dry_run {
                     pipe_log(format!("[dry-run] shell: {}", processed_command), tx, &mut logs);

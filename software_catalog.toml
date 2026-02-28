@@ -246,7 +246,7 @@ install_dir = "~/"
 [software.localsend.source]
 kind = "github"
 repo = "localsend/localsend"
-asset_pattern = ".*linux-{xarch}\\.(deb|rpm|AppImage)"
+asset_pattern = "LocalSend-.*-linux-.*\\.(deb|rpm|AppImage)"
 
 [[software.localsend.setup_steps]]
 kind = "note"

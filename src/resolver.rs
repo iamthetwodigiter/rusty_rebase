@@ -210,9 +210,16 @@ fn resolve_generic_scraper(
         "x86" => "386",
         other => other,
     };
+    let dash_arch = std::env::consts::ARCH.replace('_', "-");
 
-    let processed_v_re = version_regex.replace("{arch}", sys_arch).replace("{xarch}", std::env::consts::ARCH);
-    let processed_d_re = download_url_regex.replace("{arch}", sys_arch).replace("{xarch}", std::env::consts::ARCH);
+    let processed_v_re = version_regex
+        .replace("{arch}", sys_arch)
+        .replace("{xarch}", std::env::consts::ARCH)
+        .replace("{xarch_dash}", &dash_arch);
+    let processed_d_re = download_url_regex
+        .replace("{arch}", sys_arch)
+        .replace("{xarch}", std::env::consts::ARCH)
+        .replace("{xarch_dash}", &dash_arch);
 
     let v_re = Regex::new(&processed_v_re).map_err(|e| format!("invalid version regex: {e}"))?;
     let d_re = Regex::new(&processed_d_re).map_err(|e| format!("invalid download url regex: {e}"))?;
@@ -250,14 +257,6 @@ fn resolve_github(client: &Client, repo_opt: &Option<String>, asset_pattern: &st
     let repo = repo_opt.as_ref()
         .ok_or_else(|| "github repo not configured for this software".to_string())?;
 
-    let sys_arch = match std::env::consts::ARCH {
-        "x86_64" => "amd64",
-        "aarch64" => "arm64",
-        "x86" => "386",
-        other => other,
-    };
-    let processed_pattern = asset_pattern.replace("{arch}", sys_arch).replace("{xarch}", std::env::consts::ARCH);
-
     let api_url = format!("https://api.github.com/repos/{repo}/releases/latest");
     let release: GitHubRelease = client
         .get(&api_url)
@@ -267,29 +266,47 @@ fn resolve_github(client: &Client, repo_opt: &Option<String>, asset_pattern: &st
         .json()
         .map_err(|e| format!("failed to decode github release json: {e}"))?;
 
-    let re = Regex::new(&processed_pattern).map_err(|e| format!("invalid regex check: {e}"))?;
-    let mut matched_assets: Vec<&GitHubAsset> = release.assets.iter().filter(|a| re.is_match(&a.name)).collect();
+    let re = Regex::new(asset_pattern).map_err(|e| format!("invalid asset pattern regex: {e}"))?;
+    let mut matched: Vec<&GitHubAsset> = release.assets.iter()
+        .filter(|a| re.is_match(&a.name))
+        .collect();
 
-    if matched_assets.is_empty() {
-        return Err(format!("no asset matching pattern '{processed_pattern}' found in release"));
+    if matched.is_empty() {
+        return Err(format!("no asset matching '{}' found in github:{}", asset_pattern, repo));
     }
 
+    let sys_arch = std::env::consts::ARCH;
     let preferred_ext = match distro.pkg_manager {
-        PackageManager::Apt => ".deb",
-        PackageManager::Dnf => ".rpm",
-        _ => "NO_PREF",
+        crate::distro::PackageManager::Apt => ".deb",
+        crate::distro::PackageManager::Dnf => ".rpm",
+        _ => "___",
     };
 
     let score = |name: &str| -> i32 {
-        if name.ends_with(preferred_ext) { return 10; }
-        if name.ends_with(".deb") || name.ends_with(".rpm") { return 5; }
-        if name.ends_with(".AppImage") { return 3; }
-        if name.ends_with(".tar.gz") || name.ends_with(".tar.xz") || name.ends_with(".zip") { return 1; }
-        0
+        let mut s = 0;
+        let name_lower = name.to_lowercase();
+        
+        // Arch match (higher priority)
+        let has_arch = match sys_arch {
+            "x86_64" => name_lower.contains("x86_64") || name_lower.contains("x86-64") || name_lower.contains("amd64") || name_lower.contains("x64"),
+            "aarch64" => name_lower.contains("aarch64") || name_lower.contains("arm64") || name_lower.contains("arm-64"),
+            "arm" => name_lower.contains("armv7") || name_lower.contains("armhf") || (name_lower.contains("arm") && !name_lower.contains("64")),
+            "x86" => name_lower.contains("i386") || name_lower.contains("x86") || name_lower.contains("386"),
+            _ => false,
+        };
+        if has_arch { s += 100; }
+
+        // Extension match
+        if name.ends_with(preferred_ext) { s += 50; }
+        else if name.ends_with(".deb") || name.ends_with(".rpm") { s += 20; }
+        else if name.ends_with(".AppImage") { s += 10; }
+        else if name.ends_with(".tar.gz") || name.ends_with(".tar.xz") || name.ends_with(".zip") { s += 5; }
+
+        s
     };
 
-    matched_assets.sort_by_key(|a| std::cmp::Reverse(score(&a.name)));
-    let asset = matched_assets[0];
+    matched.sort_by_key(|a| std::cmp::Reverse(score(&a.name)));
+    let asset = matched[0];
 
     Ok(ResolvedAsset {
         version: release.tag_name.trim_start_matches('v').to_string(),
