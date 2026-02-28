@@ -4,6 +4,14 @@
 
 Tired of running messy bash scripts to set up a new Linux machine? Rusty Rebase allows you to define your desired software environment in a clean TOML configuration file and handles the heavy lifting of resolving download URLs, parsing GitHub releases, and utilizing your system's package manager. Complete with a beautiful Terminal User Interface (TUI).
 
+## 🤝 Better Together
+
+For the ultimate Linux setup experience, use Rusty Rebase alongside its companion:
+
+- **[Rusty Sync](https://github.com/iamthetwodigiter/rusty_sync)**: The intelligent backup system that generates metadata for one-click restoration with Rebase.
+
+*Backup with Sync → Reinstall OS → Restore with Rebase.*
+
 ## Features
 
 - **Declarative Configuration:** Define everything you want to install in a simple `software_catalog.toml` file.
