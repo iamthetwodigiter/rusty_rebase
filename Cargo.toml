@@ -1,0 +1,22 @@
+[package]
+name = "rusty_rebase"
+version = "0.1.0"
+edition = "2024"
+authors = ["thetwodigiter"]
+description = "A declarative and interactive Linux post-installation setup and software management tool."
+repository = "https://github.com/iamthetwodigiter/rusty_rebase"
+keywords = ["linux", "setup", "manager", "cli", "tui"]
+categories = ["command-line-utilities"]
+readme = "README.md"
+
+
+[dependencies]
+crossterm = "0.28"
+dirs = "6.0"
+ratatui = "0.29"
+regex = "1.11"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+sysinfo = "0.33"
